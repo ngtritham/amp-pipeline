@@ -6,9 +6,26 @@ on:
   pull_request:
     branches: [ main, master ]
 
+permissions:
+  id-token: write   # Required for requesting the JWT
+  contents: read    # Required for actions/checkout
+
 jobs:
   hello:
     runs-on: ubuntu-latest
     steps:
+      - name: Git clone the repository
+        uses: actions/checkout@v5
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::<account-id>:role/<role-name>
+          role-session-name: amp-pipeline-session
+          aws-region: <aws-region>
+
       - name: Echo Hello
-        run: echo "Hello, World!"
+        run: echo "Hello from AWS!"
+
+      - name: Verify AWS credentials
+        run: aws sts get-caller-identity
